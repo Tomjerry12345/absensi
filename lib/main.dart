@@ -6,7 +6,7 @@ import 'package:flutter_application_1/presentation/pages/my_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-// test
+// hello world
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
