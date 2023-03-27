@@ -183,9 +183,9 @@ class _CheckPageState extends State<CheckPage> {
   @override
   Widget build(BuildContext context) {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    final user = FirebaseAuth.instance.currentUser;
+    // final user = FirebaseAuth.instance.currentUser;
     FirebaseAuth auth = FirebaseAuth.instance;
-    String uid = auth.currentUser!.uid;
+    // String uid = auth.currentUser!.uid;
 
     return Scaffold(
         body: SingleChildScrollView(
@@ -197,9 +197,13 @@ class _CheckPageState extends State<CheckPage> {
                 stream: streamPresent(),
                 builder: (context, snap) {
                   var _isCheckIn = snap.data!.size > 0 ? false : true;
-                  Map<String, dynamic>? data =
-                      snap.data!.docs[0].data() as Map<String, dynamic>?;
-                  print(data);
+                  Map<String, dynamic>? data;
+
+                  if (!_isCheckIn) {
+                    data = snap.data!.docs[0].data() as Map<String, dynamic>?;
+                  }
+
+                  // print(data);
                   return Stack(
                     children: [
                       Container(
@@ -271,7 +275,8 @@ class _CheckPageState extends State<CheckPage> {
                           margin: const EdgeInsets.only(top: 180, bottom: 10),
                           width: double.infinity,
                           padding: const EdgeInsets.all(25),
-                          child: data == null
+                          child: data?["waktu_pulang"].toString() == "{}" ||
+                                  data == null
                               ? ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: _isCheckIn
