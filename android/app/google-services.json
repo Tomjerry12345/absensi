@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1006596669060",
+    "project_id": "presensi-bb625",
+    "storage_bucket": "presensi-bb625.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1006596669060:android:8f6ab0f148ed0538f40cd1",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1006596669060-0098pjpdb238t7gf53qbj7jun7q8hhi1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC5Lb2tI-rbfQExaPL7SZ7vJorN0j_RtTk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1006596669060-0098pjpdb238t7gf53qbj7jun7q8hhi1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
