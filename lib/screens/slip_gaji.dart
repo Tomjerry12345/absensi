@@ -18,6 +18,7 @@ import 'package:pdf/pdf.dart';
 // ignore: depend_on_referenced_packages
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:web_dashboard_app_tut/utils/Utilitas.dart';
 import '../models/present.dart';
 import 'package:flutter/foundation.dart';
 // import 'package:syncfusion_flutter_xlsio/xlsio.dart';
@@ -30,7 +31,38 @@ class Gaji extends StatefulWidget {
 }
 
 class _GajiState extends State<Gaji> {
-  _exportToExcel() {
+  DateTime selectedPeriod = DateTime.now();
+  bool show = false;
+
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+  String search = "";
+  late TextEditingController searchController =
+      TextEditingController(text: search);
+
+  List<Map<String, dynamic>> data = [];
+  int index = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    getUsers();
+  }
+
+  Future<DateTime> _selectPeriod(BuildContext context) async {
+    final selected = await showDatePicker(
+        context: context,
+        initialDate: selectedPeriod,
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2025));
+    if (selected != null && selected != selectedPeriod) {
+      setState(() {
+        selectedPeriod = selected;
+      });
+    }
+    return selectedPeriod;
+  }
+
+  void _exportToExcel() {
     final excel = Excel.createExcel();
     final sheet = excel.sheets[excel.getDefaultSheet() as String];
     sheet!.setColWidth(2, 50);
@@ -56,78 +88,126 @@ class _GajiState extends State<Gaji> {
     excel.save();
   }
 
-  DateTime selectedPeriod = DateTime.now();
-  bool show = false;
+  // // ignore: non_constant_identifier_names
+  // void getData() async {
+  //   FirebaseFirestore firestore = FirebaseFirestore.instance;
+  //   QuerySnapshot<Map<String, dynamic>> users =
+  //       await firestore.collection("users").get();
 
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
-  String search = "";
-  late TextEditingController searchController =
-      TextEditingController(text: search);
+  //   for (var user in users.docs) {
+  //     absen.add({
+  //       "id": user.id,
+  //       "nama": user['nama'],
+  //       "bulan": null,
+  //       "gajiPokok": 0,
+  //       "totalLembur": 0,
+  //       "totalP": 0,
+  //       "totalKeterlabatan": 0,
+  //       "totalKeseluruhan": 0,
+  //     });
+  //   }
 
-  Future<DateTime> _selectPeriod(BuildContext context) async {
-    final selected = await showDatePicker(
-        context: context,
-        initialDate: selectedPeriod,
-        firstDate: DateTime(2000),
-        lastDate: DateTime(2025));
-    if (selected != null && selected != selectedPeriod) {
-      setState(() {
-        selectedPeriod = selected;
-      });
-    }
-    return selectedPeriod;
-  }
+  //   QuerySnapshot<Map<String, dynamic>> present =
+  //       await firestore.collectionGroup('present').get();
+  //   int index = 0;
+  //   // Memperbarui nilai gajiPokok dan totalLembur untuk setiap pengguna berdasarkan bulan
+  //   absen.forEach((user) {
+  //     for (var doc in present.docs) {
+  //       if (doc.reference.parent.parent!.id == user['id']) {
+  //         absen[index]['gajiPokok'] =
+  //             absen[index]['gajiPokok'] + doc['gajiDay'];
+  //         // absen[index]['totalP'] = absen[index]['totalP'] + doc['biaya'];
 
-  @override
-  void initState() {
-    super.initState();
-    getData();
-  }
+  //         // absen[index]['totalPinjaman'] =
+  //         //     absen[index]['totalPinjaman'] + doc['biaya'];
+  //         // absen[index]['totalLembur'] =
+  //         //     absen[index]['totalLembur'] + doc['waktuLembur'];
+  //       }
+  //     }
+  //     index++;
+  //   });
 
-  List<Map<String, dynamic>> absen = [];
-  List<Map<String, dynamic>> data = [];
+  //   setState(() {
+  //     data = absen;
+  //   });
+  // }
 
-  // ignore: non_constant_identifier_names
-  void getData() async {
+  void getUsers() async {
+    List<Map<String, dynamic>> l = [];
+    String todayDocID =
+        DateFormat().add_yMd().format(selectedPeriod).replaceAll("/", "-");
+    var date = todayDocID.split("-");
+
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     QuerySnapshot<Map<String, dynamic>> users =
         await firestore.collection("users").get();
+    QuerySnapshot<Map<String, dynamic>> present = await firestore
+        .collection("present")
+        .where("tanggal.bulan", isEqualTo: date[0])
+        .get();
+    QuerySnapshot<Map<String, dynamic>> pengajuan = await firestore
+        .collection("pengajuan")
+        .where("tanggal_mulai", isEqualTo: monthName(int.parse(date[0])))
+        .where("tipe_pengajuan", isEqualTo: "Kasbon")
+        .get();
 
-    for (var user in users.docs) {
-      absen.add({
-        "id": user.id,
-        "nama": user['nama'],
-        "bulan": null,
-        "gajiPokok": 0,
-        "totalLembur": 0,
-        "totalP": 0,
-        "totalKeterlabatan": 0,
-        "totalKeseluruhan": 0,
-      });
-    }
-    QuerySnapshot<Map<String, dynamic>> present =
-        await firestore.collectionGroup('present').get();
-    int index = 0;
-    // Memperbarui nilai gajiPokok dan totalLembur untuk setiap pengguna berdasarkan bulan
-    absen.forEach((user) {
-      for (var doc in present.docs) {
-        if (doc.reference.parent.parent!.id == user['id']) {
-          absen[index]['gajiPokok'] =
-              absen[index]['gajiPokok'] + doc['gajiDay'];
-          // absen[index]['totalP'] = absen[index]['totalP'] + doc['biaya'];
+    logO("pengajuan", pengajuan.size);
 
-          // absen[index]['totalPinjaman'] =
-          //     absen[index]['totalPinjaman'] + doc['biaya'];
-          // absen[index]['totalLembur'] =
-          //     absen[index]['totalLembur'] + doc['waktuLembur'];
+    users.docs.forEach((u) {
+      final uData = u.data();
+      String uNama = uData["nama"];
+      int tGajiPokok = 0;
+      int tPinjaman = 0;
+      int tGajiLembur = 0;
+      int tGajiTerlambat = 0;
+      int tGaji = 0;
+
+      present.docs.forEach((p) {
+        Map<String, dynamic> pData = p.data();
+        String pNama = pData["nama"];
+
+        if (uNama == pNama) {
+          int gp = pData["gaji_pokok"];
+          int gl = pData["gaji_lembur"];
+          int gt = pData["gaji_terlambat"];
+          tGajiPokok += gp;
+          tGajiLembur += gl;
+          tGajiTerlambat += gt;
         }
-      }
-      index++;
+      });
+
+      pengajuan.docs.forEach((pa) {
+        Map<String, dynamic> paData = pa.data();
+        String paNama = paData["nama"];
+        String paStatus = paData["status"];
+
+        if (uNama == paNama && paStatus == "1") {
+          int biaya = int.parse(paData["biaya"]);
+          tPinjaman += biaya;
+        }
+      });
+
+      tGaji = (tGajiPokok + tGajiLembur) - tGajiTerlambat - tPinjaman;
+
+      l.add({
+        "nama": uNama,
+        "total_gaji_pokok": tGajiPokok,
+        "total_gaji_lembur": tGajiLembur,
+        "total_pinjaman": tPinjaman,
+        "total_gaji_keterlambatan": tGajiTerlambat,
+        "total_gaji_keseluruhan": tGaji
+      });
     });
+
     setState(() {
-      data = absen;
+      data = l;
     });
   }
+
+  // Stream<QuerySnapshot<Map<String, dynamic>>> getData() async* {
+  //   FirebaseFirestore firestore = FirebaseFirestore.instance;
+  //   yield* firestore.collection("present").snapshots();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -150,8 +230,6 @@ class _GajiState extends State<Gaji> {
           ),
           Container(
             margin: const EdgeInsets.only(bottom: 10, right: 20),
-            //margin: EdgeInsets.symmetric(horizontal: 30),
-            // padding: EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -240,37 +318,38 @@ class _GajiState extends State<Gaji> {
             height: 20,
           ),
           SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              columnSpacing: 70,
-              horizontalMargin: 70,
-              showCheckboxColumn: false,
-              dataRowHeight: 48,
-              headingRowColor: MaterialStateProperty.all(Colors.grey.shade200),
-              columns: const [
-                DataColumn(label: Text('No')),
-                DataColumn(label: Text('Nama')),
-                DataColumn(label: Text('Gaji Pokok')),
-                DataColumn(label: Text('Total Gaji Lembur')),
-                DataColumn(label: Text('Total Pinjaman(-)')),
-                DataColumn(label: Text('Total Keterlambatan(-)')),
-                DataColumn(label: Text('Total Keseluruhan')),
-              ],
-              rows: data.map((e) {
-                int index = 0;
-                index++;
-                return DataRow(cells: [
-                  DataCell(Text(index.toString())),
-                  DataCell(Text(e['nama']?.toString() ?? '')),
-                  DataCell(Text(e['gajiPokok']?.toString() ?? '')),
-                  const DataCell(Text("Lembur")),
-                  const DataCell(Text("Pinjaman")),
-                  const DataCell(Text("Terlambat")),
-                  const DataCell(Text("Keseluruhan")),
-                ]);
-              }).toList(),
-            ),
-          )
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                columnSpacing: 70,
+                horizontalMargin: 70,
+                showCheckboxColumn: false,
+                dataRowHeight: 48,
+                headingRowColor:
+                    MaterialStateProperty.all(Colors.grey.shade200),
+                columns: const [
+                  DataColumn(label: Text('No')),
+                  DataColumn(label: Text('Nama')),
+                  DataColumn(label: Text('Gaji Pokok')),
+                  DataColumn(label: Text('Total Gaji Lembur')),
+                  DataColumn(label: Text('Total Pinjaman(-)')),
+                  DataColumn(label: Text('Total Keterlambatan(-)')),
+                  DataColumn(label: Text('Total Keseluruhan')),
+                ],
+                rows: data.map((e) {
+                  index++;
+                  return DataRow(cells: [
+                    DataCell(Text(index.toString())),
+                    DataCell(Text(e['nama']?.toString() ?? '')),
+                    DataCell(Text(e['total_gaji_pokok']?.toString() ?? " ")),
+                    DataCell(Text(e['total_gaji_lembur']?.toString() ?? " ")),
+                    DataCell(Text(e['total_pinjaman']?.toString() ?? " ")),
+                    DataCell(
+                        Text(e['total_gaji_keterlambatan']?.toString() ?? " ")),
+                    DataCell(
+                        Text(e['total_gaji_keseluruhan']?.toString() ?? " ")),
+                  ]);
+                }).toList(),
+              ))
         ],
       ),
     );

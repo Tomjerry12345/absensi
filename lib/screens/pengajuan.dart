@@ -15,6 +15,7 @@ import 'package:pdf/pdf.dart';
 // ignore: depend_on_referenced_packages
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:web_dashboard_app_tut/utils/Utilitas.dart';
 // import 'package:syncfusion_flutter_xlsio/xlsio.dart';
 
 class Pengajuan extends StatefulWidget {
@@ -25,7 +26,7 @@ class Pengajuan extends StatefulWidget {
 }
 
 class _PengajuanState extends State<Pengajuan> {
-  String? dropDownValue = "Izin";
+  String? dropDownValue = "Kasbon";
   List<String> citylist = [
     'Izin',
     'Kasbon',
@@ -141,6 +142,7 @@ class _PengajuanState extends State<Pengajuan> {
         //         .orderBy("email")
         //         .snapshots(),
         builder: (context, snapshot) {
+          logO("snapshoot", snapshot.data?.size);
           if (snapshot.hasData) {
             return Expanded(
               child: Column(
@@ -184,97 +186,120 @@ class _PengajuanState extends State<Pengajuan> {
                       ],
                     ),
                   ),
-                  Container(
-                    margin: const EdgeInsets.only(
-                        bottom: 10, right: 14, left: 1100, top: 10),
-                    child: Row(
-                      children: [
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Warna.hijauht,
-                            padding: const EdgeInsets.symmetric(horizontal: 15),
-                          ),
-                          onPressed: _createPdf,
-                          child: const Text("Cetak"),
-                        ),
-                        const SizedBox(
-                          width: 5,
-                        ),
-                        Row(
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(right: 24),
+                        child: Row(
                           children: [
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    Color.fromARGB(255, 88, 104, 103),
+                                backgroundColor: Warna.hijauht,
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 15),
                               ),
-                              onPressed: _exportToExcel,
-                              child: const Text("Download"),
-                            )
+                              onPressed: _createPdf,
+                              child: const Text("Cetak"),
+                            ),
+                            const SizedBox(
+                              width: 5,
+                            ),
+                            Row(
+                              children: [
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                        Color.fromARGB(255, 88, 104, 103),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 15),
+                                  ),
+                                  onPressed: _exportToExcel,
+                                  child: const Text("Download"),
+                                )
+                              ],
+                            ),
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  Container(
-                    margin: const EdgeInsets.only(left: 17, right: 1100),
-                    child: Column(
-                      children: <Widget>[
-                        DropdownButtonFormField(
-                          decoration: InputDecoration(
-                              filled: true,
-                              hintStyle: TextStyle(color: Warna.abuabu),
-                              hintText: "Izin / Kasbon",
-                              fillColor: Warna.putih),
-                          value: dropDownValue,
-                          // ignore: non_constant_identifier_names
-                          onChanged: (String? Value) {
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Container(
+                        // margin: const EdgeInsets.only(left: 17, right: 1100),
+                        width: 200,
+                        child: Column(
+                          children: <Widget>[
+                            DropdownButtonFormField(
+                              decoration: InputDecoration(
+                                  filled: true,
+                                  hintStyle: TextStyle(color: Warna.abuabu),
+                                  hintText: "Izin / Kasbon",
+                                  fillColor: Warna.putih),
+                              value: dropDownValue,
+                              // ignore: non_constant_identifier_names
+                              onChanged: (String? Value) {
+                                setState(() {
+                                  dropDownValue = Value ?? "";
+                                });
+                              },
+                              items: citylist
+                                  .map((cityTitle) => DropdownMenuItem(
+                                      value: cityTitle, child: Text(cityTitle)))
+                                  .toList(),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(right: 20),
+                        width: 200,
+                        height: 48,
+                        decoration: BoxDecoration(
+                            color: Warna.putih,
+                            borderRadius: BorderRadius.circular(5)),
+                        child: Center(
+                            child: TextField(
+                          controller: searchController,
+                          onChanged: (value) {
                             setState(() {
-                              dropDownValue = Value ?? "";
+                              search = value;
                             });
                           },
-                          items: citylist
-                              .map((cityTitle) => DropdownMenuItem(
-                                  value: cityTitle, child: Text(cityTitle)))
-                              .toList(),
-                        ),
-                      ],
-                    ),
+                          decoration: InputDecoration(
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Warna.hijau2,
+                                  width: 1.0,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Warna.hijau2,
+                                  width: 1.0,
+                                ),
+                              ),
+                              suffixIcon: IconButton(
+                                icon: const Icon(Icons.search),
+                                onPressed: () {},
+                              )),
+                        )),
+                      ),
+                    ],
                   ),
-                  Container(
-                    margin: const EdgeInsets.only(left: 900, right: 20),
-                    width: double.infinity,
-                    height: 48,
-                    decoration: BoxDecoration(
-                        color: Warna.putih,
-                        borderRadius: BorderRadius.circular(5)),
-                    child: Center(
-                        child: TextField(
-                      controller: searchController,
-                      onChanged: (value) {
-                        setState(() {
-                          search = value;
-                        });
-                      },
-                      decoration: InputDecoration(
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: Warna.hijau2,
-                              width: 1.0,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: Warna.hijau2,
-                              width: 1.0,
-                            ),
-                          ),
-                          suffixIcon: IconButton(
-                            icon: const Icon(Icons.search),
-                            onPressed: () {},
-                          )),
-                    )),
+                  SizedBox(
+                    height: 10,
                   ),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 50, top: 10),
@@ -287,147 +312,10 @@ class _PengajuanState extends State<Pengajuan> {
                           Column(
                             //crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              DataTable(
-                                columnSpacing: 70,
-                                horizontalMargin: 30,
-                                showCheckboxColumn: false,
-                                dataRowHeight: 48,
-                                headingRowColor: MaterialStateProperty.all(
-                                    Colors.grey.shade200),
-                                columns: const <DataColumn>[
-                                  DataColumn(label: Text("No")),
-                                  DataColumn(label: Text("Nama")),
-                                  DataColumn(label: Text("Tanggal Pengajuan")),
-                                  DataColumn(label: Text("Jenis")),
-                                  DataColumn(label: Text("Keterangan")),
-                                  DataColumn(label: Text("Biaya")),
-                                  DataColumn(label: Text("Tanggal Mulai")),
-                                  DataColumn(label: Text("Tanggal Selesai")),
-                                  DataColumn(label: Text("Status")),
-                                ],
-                                rows: List<DataRow>.generate(
-                                    snapshot.data!.docs.length, (index) {
-                                  DocumentSnapshot data =
-                                      snapshot.data!.docs[index];
-                                  final number = index + 1;
-
-                                  return DataRow(cells: [
-                                    DataCell(Text(number.toString())),
-                                    DataCell(Text(data["nama"])),
-                                    DataCell(Text(DateFormat('dd MMMM yyyy')
-                                        .format(data['created_at'].toDate())
-                                        .toString())),
-                                    DataCell(Text(data["jenis"])),
-                                    DataCell(Text(data['keterangan'])),
-                                    DataCell(Text("Rp ${data['biaya']}")),
-                                    DataCell(data['tipe_pengajuan'] == 'Izin'
-                                        ? Text(DateFormat('dd MMMM yyyy')
-                                            .format(
-                                                data['tanggal_mulai'].toDate())
-                                            .toString())
-                                        : const Text('-')),
-                                    DataCell(data['tipe_pengajuan'] == 'Izin'
-                                        ? Text(DateFormat('dd MMMM yyyy')
-                                            .format(data['tanggal_selesai']
-                                                .toDate())
-                                            .toString())
-                                        : const Text('-')),
-
-                                    DataCell(Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.stretch,
-                                      children: [
-                                        const Padding(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 75, vertical: 4)),
-                                        data['status'] == "0"
-                                            ? Row(
-                                                children: [
-                                                  ElevatedButton(
-                                                    style: ElevatedButton
-                                                        .styleFrom(
-                                                            backgroundColor:
-                                                                Colors.green,
-                                                            textStyle:
-                                                                const TextStyle(
-                                                                    fontSize:
-                                                                        16)),
-                                                    child:
-                                                        const Text("Setujui"),
-                                                    onPressed: () {
-                                                      submit("1", data.id,
-                                                          context);
-                                                    },
-                                                  ),
-                                                  const SizedBox(
-                                                    width: 8,
-                                                  ),
-                                                  ElevatedButton(
-                                                    style: ElevatedButton
-                                                        .styleFrom(
-                                                            backgroundColor:
-                                                                Colors.red,
-                                                            textStyle:
-                                                                const TextStyle(
-                                                                    fontSize:
-                                                                        16)),
-                                                    child: const Text("Tolak"),
-                                                    onPressed: () {
-                                                      submit("-1", data.id,
-                                                          context);
-                                                    },
-                                                  ),
-                                                ],
-                                              )
-                                            : data['status'] == '1'
-                                                ? Container(
-                                                    color: Color.fromARGB(
-                                                        255, 134, 174, 134),
-                                                    padding: const EdgeInsets
-                                                        .symmetric(vertical: 5),
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: const [
-                                                        Text(
-                                                          'Disetujui',
-                                                          style: TextStyle(
-                                                              color:
-                                                                  Colors.white),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  )
-                                                : Container(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(vertical: 5),
-                                                    color: Color.fromARGB(
-                                                        255, 207, 115, 115),
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: const [
-                                                        Text(
-                                                          'Ditolak',
-                                                          style: TextStyle(
-                                                              color:
-                                                                  Colors.white),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  )
-                                      ],
-                                    )),
-
-                                    // DataCell(Text(data['jenis'])),
-                                  ]);
-                                }),
-                              ),
                               //Now let's set the pagination
+                              dropDownValue == "Kasbon"
+                                  ? TabelKasbon(snapshot, submit, context)
+                                  : TabelIzin(snapshot, submit, context),
                               const SizedBox(
                                 height: 10.0,
                               ),
@@ -483,6 +371,213 @@ class _PengajuanState extends State<Pengajuan> {
       ),
     );
   }
+}
+
+DataTable TabelIzin(snapshot, submit, context) {
+  return DataTable(
+    columnSpacing: 70,
+    horizontalMargin: 30,
+    showCheckboxColumn: false,
+    dataRowHeight: 48,
+    // headingRowHeight: 0,
+    headingRowColor: MaterialStateProperty.all(Colors.grey.shade200),
+    columns: const <DataColumn>[
+      DataColumn(label: Text("No")),
+      DataColumn(label: Text("Nama")),
+      DataColumn(label: Text("Tanggal Pengajuan")),
+      DataColumn(label: Text("Jenis")),
+      DataColumn(label: Text("Keterangan")),
+      DataColumn(label: Text("Tanggal Mulai")),
+      DataColumn(label: Text("Tanggal Selesai")),
+      DataColumn(label: Text("Status")),
+    ],
+    rows: List<DataRow>.generate(snapshot.data!.docs.length, (index) {
+      DocumentSnapshot data = snapshot.data!.docs[index];
+      final number = index + 1;
+
+      return DataRow(cells: [
+        DataCell(Text(number.toString())),
+        DataCell(Text(data["nama"])),
+        DataCell(Text(DateFormat('dd MMMM yyyy')
+            .format(data['created_at'].toDate())
+            .toString())),
+        DataCell(Text(data["jenis"])),
+        DataCell(Text(data['keterangan'])),
+        DataCell(data['tipe_pengajuan'] == 'Izin'
+            ? Text(DateFormat('dd MMMM yyyy')
+                .format(data['tanggal_mulai'].toDate())
+                .toString())
+            : const Text('-')),
+
+        DataCell(data['tipe_pengajuan'] == 'Izin'
+            ? Text(DateFormat('dd MMMM yyyy')
+                .format(data['tanggal_selesai'].toDate())
+                .toString())
+            : const Text('-')),
+
+        DataCell(Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 75, vertical: 4)),
+            data['status'] == "0"
+                ? Row(
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            textStyle: const TextStyle(fontSize: 16)),
+                        child: const Text("Setujui"),
+                        onPressed: () {
+                          submit("1", data.id, context);
+                        },
+                      ),
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            textStyle: const TextStyle(fontSize: 16)),
+                        child: const Text("Tolak"),
+                        onPressed: () {
+                          submit("-1", data.id, context);
+                        },
+                      ),
+                    ],
+                  )
+                : data['status'] == '1'
+                    ? Container(
+                        color: Color.fromARGB(255, 134, 174, 134),
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Text(
+                              'Disetujui',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      )
+                    : Container(
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        color: Color.fromARGB(255, 207, 115, 115),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Text(
+                              'Ditolak',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      )
+          ],
+        )),
+
+        // DataCell(Text(data['jenis'])),
+      ]);
+    }),
+  );
+}
+
+DataTable TabelKasbon(snapshot, submit, context) {
+  return DataTable(
+    columnSpacing: 70,
+    horizontalMargin: 30,
+    showCheckboxColumn: false,
+    dataRowHeight: 48,
+    headingRowColor: MaterialStateProperty.all(Colors.grey.shade200),
+    columns: const <DataColumn>[
+      DataColumn(label: Text("No")),
+      DataColumn(label: Text("Nama")),
+      DataColumn(label: Text("Tanggal Pengajuan")),
+      DataColumn(label: Text("Jenis")),
+      DataColumn(label: Text("Keterangan")),
+      DataColumn(label: Text("Biaya")),
+      DataColumn(label: Text("Status")),
+    ],
+    rows: List<DataRow>.generate(snapshot.data!.docs.length, (index) {
+      DocumentSnapshot data = snapshot.data!.docs[index];
+      final number = index + 1;
+
+      return DataRow(cells: [
+        DataCell(Text(number.toString())),
+        DataCell(Text(data["nama"])),
+        DataCell(Text(DateFormat('dd MMMM yyyy')
+            .format(data['created_at'].toDate())
+            .toString())),
+        DataCell(Text(data["jenis"])),
+        DataCell(Text(data['keterangan'])),
+        DataCell(Text("Rp ${data['biaya']}")),
+        DataCell(Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 75, vertical: 4)),
+            data['status'] == "0"
+                ? Row(
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            textStyle: const TextStyle(fontSize: 16)),
+                        child: const Text("Setujui"),
+                        onPressed: () {
+                          submit("1", data.id, context);
+                        },
+                      ),
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            textStyle: const TextStyle(fontSize: 16)),
+                        child: const Text("Tolak"),
+                        onPressed: () {
+                          submit("-1", data.id, context);
+                        },
+                      ),
+                    ],
+                  )
+                : data['status'] == '1'
+                    ? Container(
+                        color: Color.fromARGB(255, 134, 174, 134),
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Text(
+                              'Disetujui',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      )
+                    : Container(
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        color: Color.fromARGB(255, 207, 115, 115),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Text(
+                              'Ditolak',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      )
+          ],
+        )),
+
+        // DataCell(Text(data['jenis'])),
+      ]);
+    }),
+  );
 }
 
 void _createPdf() async {
