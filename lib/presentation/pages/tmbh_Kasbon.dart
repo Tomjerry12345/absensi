@@ -86,30 +86,31 @@ class _TambhKasbonState extends State<TambhKasbon> {
       };
 
       await doc.add(json);
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
-      FirebaseAuth auth = FirebaseAuth.instance;
-      String uid = auth.currentUser!.uid;
 
-      CollectionReference<Map<String, dynamic>> cPresent =
-          firestore.collection("users").doc(uid).collection("present");
+      // FirebaseFirestore firestore = FirebaseFirestore.instance;
+      // FirebaseAuth auth = FirebaseAuth.instance;
+      // String uid = auth.currentUser!.uid;
 
-      DateTime now = selectedDate;
-      String todayDocID =
-          DateFormat().add_yMd().format(now).replaceAll("/", "-");
+      // CollectionReference<Map<String, dynamic>> cPresent =
+      //     firestore.collection("users").doc(uid).collection("present");
+
+      // DateTime now = selectedDate;
+      // String todayDocID =
+      //     DateFormat().add_yMd().format(now).replaceAll("/", "-");
 
       // ignore: unrelated_type_equality_checks
 
-      await cPresent.doc(todayDocID).update({
-        "uid": user.uid,
-        "email": user.email,
-        "created_at": DateTime.now(),
-        "biaya": jumlahController.text.trim(),
-        "tanggal": selectedDate,
-        "keterangan": keteranganController.text.trim(),
-        "status": "0",
-        "month": DateFormat("MMMM").format(DateTime.now()),
-        "tipe_pengajuan": 'Kasbon',
-      });
+      // await cPresent.doc(todayDocID).update({
+      //   "uid": user.uid,
+      //   "email": user.email,
+      //   "created_at": DateTime.now(),
+      //   "biaya": jumlahController.text.trim(),
+      //   "tanggal": selectedDate,
+      //   "keterangan": keteranganController.text.trim(),
+      //   "status": "0",
+      //   "month": DateFormat("MMMM").format(DateTime.now()),
+      //   "tipe_pengajuan": 'Kasbon',
+      // });
 
       Utils.showSnackBar("Berhasil Tambah Kasbon.", Colors.green);
       keteranganController.clear();
