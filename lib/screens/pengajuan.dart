@@ -1,22 +1,14 @@
-// ignore_for_file: unused_element
-
 import 'dart:async';
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
 // import 'package:fluttertoast/fluttertoast.dart';
 import 'package:web_dashboard_app_tut/resources/warna.dart';
-// ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
-// ignore: depend_on_referenced_packages
 import 'package:pdf/pdf.dart';
-// ignore: depend_on_referenced_packages
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:web_dashboard_app_tut/utils/Utilitas.dart';
-// import 'package:syncfusion_flutter_xlsio/xlsio.dart';
 
 class Pengajuan extends StatefulWidget {
   const Pengajuan({Key? key}) : super(key: key);
@@ -31,32 +23,6 @@ class _PengajuanState extends State<Pengajuan> {
     'Izin',
     'Kasbon',
   ];
-
-  _exportToExcel() {
-    final excel = Excel.createExcel();
-    final sheet = excel.sheets[excel.getDefaultSheet() as String];
-    sheet!.setColWidth(2, 50);
-    sheet.setColAutoFit(0);
-
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0)).value =
-        'No';
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: 0)).value =
-        'Nama';
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: 0)).value =
-        'Tanggal Pengajuan';
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: 0)).value =
-        'Jenis';
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: 0)).value =
-        'Keterangan';
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: 0)).value =
-        'Biaya';
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: 0)).value =
-        'Tanggal Mulai';
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 7, rowIndex: 0)).value =
-        'Tanggal Selesai';
-
-    excel.save();
-  }
 
   DateTime selectedPeriod = DateTime.now();
   bool show = false;
@@ -112,6 +78,566 @@ class _PengajuanState extends State<Pengajuan> {
     }
   }
 
+  void _exportToExcel(QuerySnapshot<Map<String, dynamic>?>? data, type) {
+    final excel = Excel.createExcel();
+    final sheet = excel.sheets[excel.getDefaultSheet() as String];
+    sheet!.setColWidth(2, 50);
+    sheet.setColAutoFit(0);
+
+    String fileName =
+        type == "Izin" ? excellIzin(sheet, data) : excellKasbon(sheet, data);
+
+    excel.save(fileName: fileName);
+  }
+
+  String excellIzin(sheet, data) {
+    int row = 0;
+
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0)).value =
+        'No';
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: 0)).value =
+        'Nama';
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: 0)).value =
+        'Tanggal Pengajuan';
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: 0)).value =
+        'Keterangan';
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: 0)).value =
+        'Tanggal Mulai';
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: 0)).value =
+        'Tanggal Selesai';
+
+    data?.docs.forEach((e) {
+      row++;
+
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
+          .value = row.toString();
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
+          .value = e["nama"];
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: row))
+          .value = DateFormat('dd MMMM yyyy').format(e['tanggal'].toDate());
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: row))
+          .value = e["keterangan"];
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: row))
+          .value = e["tanggal_mulai"];
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: row))
+          .value = e["tanggal_selesai"];
+    });
+
+    return "data_izin.xlsx";
+  }
+
+  String excellKasbon(sheet, data) {
+    int row = 0;
+
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0)).value =
+        'No';
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: 0)).value =
+        'Nama';
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: 0)).value =
+        'Tanggal Pengajuan';
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: 0)).value =
+        'Keterangan';
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: 0)).value =
+        'Biaya';
+
+    data?.docs.forEach((e) {
+      row++;
+
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
+          .value = row.toString();
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
+          .value = e["nama"];
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: row))
+          .value = DateFormat('dd MMMM yyyy').format(e['tanggal'].toDate());
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: row))
+          .value = e["keterangan"];
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: row))
+          .value = e["biaya"];
+    });
+
+    return "data_kasbon.xlsx";
+  }
+
+  DataTable TabelIzin(snapshot, submit, context) {
+    return DataTable(
+      columnSpacing: 70,
+      horizontalMargin: 30,
+      showCheckboxColumn: false,
+      dataRowHeight: 48,
+      // headingRowHeight: 0,
+      headingRowColor: MaterialStateProperty.all(Colors.grey.shade200),
+      columns: const <DataColumn>[
+        DataColumn(label: Text("No")),
+        DataColumn(label: Text("Nama")),
+        DataColumn(label: Text("Tanggal Pengajuan")),
+        DataColumn(label: Text("Jenis")),
+        DataColumn(label: Text("Keterangan")),
+        DataColumn(label: Text("Tanggal Mulai")),
+        DataColumn(label: Text("Tanggal Selesai")),
+        DataColumn(label: Text("Status")),
+      ],
+      rows: List<DataRow>.generate(snapshot.data!.docs.length, (index) {
+        DocumentSnapshot data = snapshot.data!.docs[index];
+        final number = index + 1;
+
+        return DataRow(cells: [
+          DataCell(Text(number.toString())),
+          DataCell(Text(data["nama"])),
+          DataCell(Text(DateFormat('dd MMMM yyyy')
+              .format(data['created_at'].toDate())
+              .toString())),
+          DataCell(Text(data["jenis"])),
+          DataCell(Text(data['keterangan'])),
+          DataCell(data['tipe_pengajuan'] == 'Izin'
+              ? Text(DateFormat('dd MMMM yyyy')
+                  .format(data['tanggal_mulai'].toDate())
+                  .toString())
+              : const Text('-')),
+
+          DataCell(data['tipe_pengajuan'] == 'Izin'
+              ? Text(DateFormat('dd MMMM yyyy')
+                  .format(data['tanggal_selesai'].toDate())
+                  .toString())
+              : const Text('-')),
+
+          DataCell(Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 75, vertical: 4)),
+              data['status'] == "0"
+                  ? Row(
+                      children: [
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              textStyle: const TextStyle(fontSize: 16)),
+                          child: const Text("Setujui"),
+                          onPressed: () {
+                            submit("1", data.id, context);
+                          },
+                        ),
+                        const SizedBox(
+                          width: 8,
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              textStyle: const TextStyle(fontSize: 16)),
+                          child: const Text("Tolak"),
+                          onPressed: () {
+                            submit("-1", data.id, context);
+                          },
+                        ),
+                      ],
+                    )
+                  : data['status'] == '1'
+                      ? Container(
+                          color: Color.fromARGB(255, 134, 174, 134),
+                          padding: const EdgeInsets.symmetric(vertical: 5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Text(
+                                'Disetujui',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Container(
+                          padding: const EdgeInsets.symmetric(vertical: 5),
+                          color: Color.fromARGB(255, 207, 115, 115),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Text(
+                                'Ditolak',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        )
+            ],
+          )),
+
+          // DataCell(Text(data['jenis'])),
+        ]);
+      }),
+    );
+  }
+
+  DataTable TabelKasbon(snapshot, submit, context) {
+    return DataTable(
+      columnSpacing: 70,
+      horizontalMargin: 30,
+      showCheckboxColumn: false,
+      dataRowHeight: 48,
+      headingRowColor: MaterialStateProperty.all(Colors.grey.shade200),
+      columns: const <DataColumn>[
+        DataColumn(label: Text("No")),
+        DataColumn(label: Text("Nama")),
+        DataColumn(label: Text("Tanggal Pengajuan")),
+        DataColumn(label: Text("Jenis")),
+        DataColumn(label: Text("Keterangan")),
+        DataColumn(label: Text("Biaya")),
+        DataColumn(label: Text("Status")),
+      ],
+      rows: List<DataRow>.generate(snapshot.data!.docs.length, (index) {
+        DocumentSnapshot data = snapshot.data!.docs[index];
+        final number = index + 1;
+
+        return DataRow(cells: [
+          DataCell(Text(number.toString())),
+          DataCell(Text(data["nama"])),
+          DataCell(Text(DateFormat('dd MMMM yyyy')
+              .format(data['created_at'].toDate())
+              .toString())),
+          DataCell(Text(data["jenis"])),
+          DataCell(Text(data['keterangan'])),
+          DataCell(Text("Rp ${data['biaya']}")),
+          DataCell(Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 75, vertical: 4)),
+              data['status'] == "0"
+                  ? Row(
+                      children: [
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              textStyle: const TextStyle(fontSize: 16)),
+                          child: const Text("Setujui"),
+                          onPressed: () {
+                            submit("1", data.id, context);
+                          },
+                        ),
+                        const SizedBox(
+                          width: 8,
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              textStyle: const TextStyle(fontSize: 16)),
+                          child: const Text("Tolak"),
+                          onPressed: () {
+                            submit("-1", data.id, context);
+                          },
+                        ),
+                      ],
+                    )
+                  : data['status'] == '1'
+                      ? Container(
+                          color: Color.fromARGB(255, 134, 174, 134),
+                          padding: const EdgeInsets.symmetric(vertical: 5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Text(
+                                'Disetujui',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Container(
+                          padding: const EdgeInsets.symmetric(vertical: 5),
+                          color: Color.fromARGB(255, 207, 115, 115),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Text(
+                                'Ditolak',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        )
+            ],
+          )),
+
+          // DataCell(Text(data['jenis'])),
+        ]);
+      }),
+    );
+  }
+
+  void _createPdf(data1, type) async {
+    final doc = pw.Document();
+
+    // retrieve data from Firebase collection pengajuan
+    // QuerySnapshot querySnapshot =
+    //     await FirebaseFirestore.instance.collection('pengajuan').get();
+
+    List<DocumentSnapshot> documentList = data1.docs;
+
+    int no = 0;
+
+    /// for using an image from assets
+    // final image = await imageFromAssetBundle('assets/image.png');
+
+    doc.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return type == "Izin"
+              ? pdfIzin(no, documentList)
+              : pdfKasbon(no, documentList);
+        },
+      ),
+    );
+
+    /// print the document using the iOS or Android print service:
+    await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async => doc.save());
+
+    /// share the document to other applications:
+    // await Printing.sharePdf(bytes: await doc.save(), filename: 'my-document.pdf');
+
+    /// tutorial for using path_provider: https://www.youtube.com/watch?v=fJtFDrjEvE8
+    /// save PDF with Flutter library "path_provider":
+    // final output = await getTemporaryDirectory();
+    // final file = File('${output.path}/example.pdf');
+    // await file.writeAsBytes(await doc.save());
+  }
+
+  pw.Column pdfIzin(no, documentList) {
+    return pw.Column(
+      children: [
+        pw.Center(
+          child: pw.Text("Data Pengajuan"),
+        ),
+        pw.SizedBox(height: 20),
+        pw.Table(
+          border: pw.TableBorder.all(
+            color: PdfColor.fromHex("#000000"),
+            width: 2,
+          ),
+          children: [
+            pw.TableRow(
+              children: [
+                pw.Text("No",
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    )),
+                pw.Text("Nama",
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    )),
+                pw.Text("Tanggal Pengajuan",
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    )),
+                pw.Text("Keterangan",
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    )),
+                pw.Text("Tanggal Mulai",
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    )),
+                pw.Text("Tanggal Selesai",
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    )),
+              ],
+            ),
+            // add data to table
+            ...documentList.map(
+              (DocumentSnapshot document) {
+                no++;
+
+                Map<String, dynamic> data =
+                    document.data() as Map<String, dynamic>;
+
+                return pw.TableRow(
+                  children: [
+                    pw.Text(no.toString(),
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                        )),
+                    pw.Text(data["nama"],
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                        )),
+                    pw.Text(
+                        DateFormat('dd MMMM yyyy')
+                            .format(data['tanggal'].toDate())
+                            .toString(),
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                        )),
+                    pw.Text(data["keterangan"],
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                        )),
+                    pw.Text(data["tanggal_mulai"],
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                        )),
+                    pw.Text(data["tanggal_selesai"],
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                        )),
+                  ],
+                );
+              },
+            )
+          ],
+        )
+      ],
+    );
+  }
+
+  pw.Column pdfKasbon(no, documentList) {
+    return pw.Column(
+      children: [
+        pw.Center(
+          child: pw.Text("Data Pengajuan"),
+        ),
+        pw.SizedBox(height: 20),
+        pw.Table(
+          border: pw.TableBorder.all(
+            color: PdfColor.fromHex("#000000"),
+            width: 2,
+          ),
+          children: [
+            pw.TableRow(
+              children: [
+                pw.Text("No",
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    )),
+                pw.Text("Nama",
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    )),
+                pw.Text("Tanggal Pengajuan",
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    )),
+                pw.Text("Keterangan",
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    )),
+                pw.Text("Biaya",
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    )),
+              ],
+            ),
+            // add data to table
+            ...documentList.map(
+              (DocumentSnapshot document) {
+                no++;
+
+                Map<String, dynamic> data =
+                    document.data() as Map<String, dynamic>;
+
+                return pw.TableRow(
+                  children: [
+                    pw.Text(no.toString(),
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                        )),
+                    pw.Text(data["nama"],
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                        )),
+                    pw.Text(
+                        DateFormat('dd MMMM yyyy')
+                            .format(data['tanggal'].toDate())
+                            .toString(),
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                        )),
+                    pw.Text(data["keterangan"],
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                        )),
+                    pw.Text(data["biaya"],
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                        )),
+                  ],
+                );
+              },
+            )
+          ],
+        )
+      ],
+    );
+  }
+
+  void _displayPdf() {
+    final doc = pw.Document();
+    doc.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Center(
+            child: pw.Text(
+              'Data Pengajuan Karyawan',
+              style: const pw.TextStyle(fontSize: 30),
+            ),
+          );
+        },
+      ),
+    );
+
+    /// open Preview Screen
+
+    // Navigator.push(context, MaterialPageRoute(builder:
+    //     (context) => PreviewScreen(doc: doc),));
+  }
+
   @override
   Widget build(BuildContext context) {
     final ScrollController _firstController = ScrollController();
@@ -130,17 +656,6 @@ class _PengajuanState extends State<Pengajuan> {
                 .where("month",
                     isEqualTo: DateFormat("MMMM").format(selectedPeriod))
                 .get(),
-
-        // stream: search != ""
-        //     ? firestore
-        //         .collection("pengajuan")
-        //         .where("tipe_pengajuan", isEqualTo: dropDownValue)
-        //         .snapshots()
-        //     : firestore
-        //         .collection("pengajuan")
-        //         .where("tipe_pengajuan", isEqualTo: "Izin")
-        //         .orderBy("email")
-        //         .snapshots(),
         builder: (context, snapshot) {
           logO("snapshoot", snapshot.data?.size);
           if (snapshot.hasData) {
@@ -202,7 +717,9 @@ class _PengajuanState extends State<Pengajuan> {
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 15),
                               ),
-                              onPressed: _createPdf,
+                              onPressed: () {
+                                _createPdf(snapshot.data, dropDownValue);
+                              },
                               child: const Text("Cetak"),
                             ),
                             const SizedBox(
@@ -217,7 +734,12 @@ class _PengajuanState extends State<Pengajuan> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 15),
                                   ),
-                                  onPressed: _exportToExcel,
+                                  onPressed: () {
+                                    _exportToExcel(
+                                        snapshot.data as QuerySnapshot<
+                                            Map<String, dynamic>?>?,
+                                        dropDownValue);
+                                  },
                                   child: const Text("Download"),
                                 )
                               ],
@@ -371,344 +893,6 @@ class _PengajuanState extends State<Pengajuan> {
       ),
     );
   }
-}
-
-DataTable TabelIzin(snapshot, submit, context) {
-  return DataTable(
-    columnSpacing: 70,
-    horizontalMargin: 30,
-    showCheckboxColumn: false,
-    dataRowHeight: 48,
-    // headingRowHeight: 0,
-    headingRowColor: MaterialStateProperty.all(Colors.grey.shade200),
-    columns: const <DataColumn>[
-      DataColumn(label: Text("No")),
-      DataColumn(label: Text("Nama")),
-      DataColumn(label: Text("Tanggal Pengajuan")),
-      DataColumn(label: Text("Jenis")),
-      DataColumn(label: Text("Keterangan")),
-      DataColumn(label: Text("Tanggal Mulai")),
-      DataColumn(label: Text("Tanggal Selesai")),
-      DataColumn(label: Text("Status")),
-    ],
-    rows: List<DataRow>.generate(snapshot.data!.docs.length, (index) {
-      DocumentSnapshot data = snapshot.data!.docs[index];
-      final number = index + 1;
-
-      return DataRow(cells: [
-        DataCell(Text(number.toString())),
-        DataCell(Text(data["nama"])),
-        DataCell(Text(DateFormat('dd MMMM yyyy')
-            .format(data['created_at'].toDate())
-            .toString())),
-        DataCell(Text(data["jenis"])),
-        DataCell(Text(data['keterangan'])),
-        DataCell(data['tipe_pengajuan'] == 'Izin'
-            ? Text(DateFormat('dd MMMM yyyy')
-                .format(data['tanggal_mulai'].toDate())
-                .toString())
-            : const Text('-')),
-
-        DataCell(data['tipe_pengajuan'] == 'Izin'
-            ? Text(DateFormat('dd MMMM yyyy')
-                .format(data['tanggal_selesai'].toDate())
-                .toString())
-            : const Text('-')),
-
-        DataCell(Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 75, vertical: 4)),
-            data['status'] == "0"
-                ? Row(
-                    children: [
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            textStyle: const TextStyle(fontSize: 16)),
-                        child: const Text("Setujui"),
-                        onPressed: () {
-                          submit("1", data.id, context);
-                        },
-                      ),
-                      const SizedBox(
-                        width: 8,
-                      ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            textStyle: const TextStyle(fontSize: 16)),
-                        child: const Text("Tolak"),
-                        onPressed: () {
-                          submit("-1", data.id, context);
-                        },
-                      ),
-                    ],
-                  )
-                : data['status'] == '1'
-                    ? Container(
-                        color: Color.fromARGB(255, 134, 174, 134),
-                        padding: const EdgeInsets.symmetric(vertical: 5),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Text(
-                              'Disetujui',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ],
-                        ),
-                      )
-                    : Container(
-                        padding: const EdgeInsets.symmetric(vertical: 5),
-                        color: Color.fromARGB(255, 207, 115, 115),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Text(
-                              'Ditolak',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ],
-                        ),
-                      )
-          ],
-        )),
-
-        // DataCell(Text(data['jenis'])),
-      ]);
-    }),
-  );
-}
-
-DataTable TabelKasbon(snapshot, submit, context) {
-  return DataTable(
-    columnSpacing: 70,
-    horizontalMargin: 30,
-    showCheckboxColumn: false,
-    dataRowHeight: 48,
-    headingRowColor: MaterialStateProperty.all(Colors.grey.shade200),
-    columns: const <DataColumn>[
-      DataColumn(label: Text("No")),
-      DataColumn(label: Text("Nama")),
-      DataColumn(label: Text("Tanggal Pengajuan")),
-      DataColumn(label: Text("Jenis")),
-      DataColumn(label: Text("Keterangan")),
-      DataColumn(label: Text("Biaya")),
-      DataColumn(label: Text("Status")),
-    ],
-    rows: List<DataRow>.generate(snapshot.data!.docs.length, (index) {
-      DocumentSnapshot data = snapshot.data!.docs[index];
-      final number = index + 1;
-
-      return DataRow(cells: [
-        DataCell(Text(number.toString())),
-        DataCell(Text(data["nama"])),
-        DataCell(Text(DateFormat('dd MMMM yyyy')
-            .format(data['created_at'].toDate())
-            .toString())),
-        DataCell(Text(data["jenis"])),
-        DataCell(Text(data['keterangan'])),
-        DataCell(Text("Rp ${data['biaya']}")),
-        DataCell(Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 75, vertical: 4)),
-            data['status'] == "0"
-                ? Row(
-                    children: [
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            textStyle: const TextStyle(fontSize: 16)),
-                        child: const Text("Setujui"),
-                        onPressed: () {
-                          submit("1", data.id, context);
-                        },
-                      ),
-                      const SizedBox(
-                        width: 8,
-                      ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            textStyle: const TextStyle(fontSize: 16)),
-                        child: const Text("Tolak"),
-                        onPressed: () {
-                          submit("-1", data.id, context);
-                        },
-                      ),
-                    ],
-                  )
-                : data['status'] == '1'
-                    ? Container(
-                        color: Color.fromARGB(255, 134, 174, 134),
-                        padding: const EdgeInsets.symmetric(vertical: 5),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Text(
-                              'Disetujui',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ],
-                        ),
-                      )
-                    : Container(
-                        padding: const EdgeInsets.symmetric(vertical: 5),
-                        color: Color.fromARGB(255, 207, 115, 115),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Text(
-                              'Ditolak',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ],
-                        ),
-                      )
-          ],
-        )),
-
-        // DataCell(Text(data['jenis'])),
-      ]);
-    }),
-  );
-}
-
-void _createPdf() async {
-  final doc = pw.Document();
-
-  // retrieve data from Firebase collection pengajuan
-  QuerySnapshot querySnapshot =
-      await FirebaseFirestore.instance.collection('pengajuan').get();
-
-  List<DocumentSnapshot> documentList = querySnapshot.docs;
-
-  /// for using an image from assets
-  // final image = await imageFromAssetBundle('assets/image.png');
-
-  doc.addPage(
-    pw.Page(
-      pageFormat: PdfPageFormat.a4,
-      build: (pw.Context context) {
-        return pw.Column(
-          children: [
-            pw.Center(
-              child: pw.Text("Data Pengajuan"),
-            ),
-            pw.SizedBox(height: 20),
-            pw.Table(
-              border: pw.TableBorder.all(
-                color: PdfColor.fromHex("#000000"),
-                width: 2,
-              ),
-              children: [
-                pw.TableRow(
-                  children: [
-                    pw.Text("No",
-                        textAlign: pw.TextAlign.center,
-                        style: pw.TextStyle(
-                          fontSize: 12,
-                          fontWeight: pw.FontWeight.bold,
-                        )),
-                    pw.Text("Nama",
-                        textAlign: pw.TextAlign.center,
-                        style: pw.TextStyle(
-                          fontSize: 12,
-                          fontWeight: pw.FontWeight.bold,
-                        )),
-                    pw.Text("Tanggal Pengajuan",
-                        textAlign: pw.TextAlign.center,
-                        style: pw.TextStyle(
-                          fontSize: 12,
-                          fontWeight: pw.FontWeight.bold,
-                        )),
-                    pw.Text("Jumlah",
-                        textAlign: pw.TextAlign.center,
-                        style: pw.TextStyle(
-                          fontSize: 12,
-                          fontWeight: pw.FontWeight.bold,
-                        )),
-                  ],
-                ),
-                // add data to table
-                ...documentList.map(
-                  (DocumentSnapshot document) {
-                    Object? data = document.data();
-
-                    return pw.TableRow(
-                      children: [
-                        pw.Text("ok",
-                            textAlign: pw.TextAlign.center,
-                            style: const pw.TextStyle(
-                              fontSize: 12,
-                            )),
-                        pw.Text("tesss",
-                            textAlign: pw.TextAlign.center,
-                            style: const pw.TextStyle(
-                              fontSize: 12,
-                            )),
-                        pw.Text("ok",
-                            textAlign: pw.TextAlign.center,
-                            style: const pw.TextStyle(
-                              fontSize: 12,
-                            )),
-                        pw.Text("ok",
-                            textAlign: pw.TextAlign.center,
-                            style: const pw.TextStyle(
-                              fontSize: 12,
-                            )),
-                      ],
-                    );
-                  },
-                )
-              ],
-            )
-          ],
-        );
-      },
-    ),
-  );
-
-  /// print the document using the iOS or Android print service:
-  await Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) async => doc.save());
-
-  /// share the document to other applications:
-  // await Printing.sharePdf(bytes: await doc.save(), filename: 'my-document.pdf');
-
-  /// tutorial for using path_provider: https://www.youtube.com/watch?v=fJtFDrjEvE8
-  /// save PDF with Flutter library "path_provider":
-  // final output = await getTemporaryDirectory();
-  // final file = File('${output.path}/example.pdf');
-  // await file.writeAsBytes(await doc.save());
-}
-
-void _displayPdf() {
-  final doc = pw.Document();
-  doc.addPage(
-    pw.Page(
-      pageFormat: PdfPageFormat.a4,
-      build: (pw.Context context) {
-        return pw.Center(
-          child: pw.Text(
-            'Data Pengajuan Karyawan',
-            style: const pw.TextStyle(fontSize: 30),
-          ),
-        );
-      },
-    ),
-  );
-
-  /// open Preview Screen
-
-  // Navigator.push(context, MaterialPageRoute(builder:
-  //     (context) => PreviewScreen(doc: doc),));
 }
 
 class PreviewScreen extends StatelessWidget {

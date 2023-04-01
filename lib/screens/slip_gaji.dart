@@ -62,76 +62,6 @@ class _GajiState extends State<Gaji> {
     return selectedPeriod;
   }
 
-  void _exportToExcel() {
-    final excel = Excel.createExcel();
-    final sheet = excel.sheets[excel.getDefaultSheet() as String];
-    sheet!.setColWidth(2, 50);
-    sheet.setColAutoFit(0);
-
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0)).value =
-        'No';
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: 0)).value =
-        'Nama';
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: 0)).value =
-        'Tanggal Pengajuan';
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: 0)).value =
-        'Jenis';
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: 0)).value =
-        'Keterangan';
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: 0)).value =
-        'Biaya';
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: 0)).value =
-        'Tanggal Mulai';
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 7, rowIndex: 0)).value =
-        'Tanggal Selesai';
-
-    excel.save();
-  }
-
-  // // ignore: non_constant_identifier_names
-  // void getData() async {
-  //   FirebaseFirestore firestore = FirebaseFirestore.instance;
-  //   QuerySnapshot<Map<String, dynamic>> users =
-  //       await firestore.collection("users").get();
-
-  //   for (var user in users.docs) {
-  //     absen.add({
-  //       "id": user.id,
-  //       "nama": user['nama'],
-  //       "bulan": null,
-  //       "gajiPokok": 0,
-  //       "totalLembur": 0,
-  //       "totalP": 0,
-  //       "totalKeterlabatan": 0,
-  //       "totalKeseluruhan": 0,
-  //     });
-  //   }
-
-  //   QuerySnapshot<Map<String, dynamic>> present =
-  //       await firestore.collectionGroup('present').get();
-  //   int index = 0;
-  //   // Memperbarui nilai gajiPokok dan totalLembur untuk setiap pengguna berdasarkan bulan
-  //   absen.forEach((user) {
-  //     for (var doc in present.docs) {
-  //       if (doc.reference.parent.parent!.id == user['id']) {
-  //         absen[index]['gajiPokok'] =
-  //             absen[index]['gajiPokok'] + doc['gajiDay'];
-  //         // absen[index]['totalP'] = absen[index]['totalP'] + doc['biaya'];
-
-  //         // absen[index]['totalPinjaman'] =
-  //         //     absen[index]['totalPinjaman'] + doc['biaya'];
-  //         // absen[index]['totalLembur'] =
-  //         //     absen[index]['totalLembur'] + doc['waktuLembur'];
-  //       }
-  //     }
-  //     index++;
-  //   });
-
-  //   setState(() {
-  //     data = absen;
-  //   });
-  // }
-
   void getUsers() async {
     List<Map<String, dynamic>> l = [];
     String todayDocID =
@@ -204,10 +134,199 @@ class _GajiState extends State<Gaji> {
     });
   }
 
-  // Stream<QuerySnapshot<Map<String, dynamic>>> getData() async* {
-  //   FirebaseFirestore firestore = FirebaseFirestore.instance;
-  //   yield* firestore.collection("present").snapshots();
-  // }
+  void _exportToExcel() {
+    final excel = Excel.createExcel();
+    final sheet = excel.sheets[excel.getDefaultSheet() as String];
+    sheet!.setColWidth(2, 50);
+    sheet.setColAutoFit(0);
+
+    String fileName = excellPresensi(sheet, data);
+
+    excel.save(fileName: fileName);
+  }
+
+  String excellPresensi(sheet, data) {
+    int row = 0;
+
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0)).value =
+        'No';
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: 0)).value =
+        'Nama';
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: 0)).value =
+        'Gaji Pokok';
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: 0)).value =
+        'Total Gaji Lembur';
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: 0)).value =
+        'Total Pinjaman';
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: 0)).value =
+        'Total Keterlambatan';
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: 0)).value =
+        'Total Keseluruhan';
+
+    data.forEach((e) {
+      row++;
+
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
+          .value = row.toString();
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
+          .value = e["nama"];
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: row))
+          .value = e["total_gaji_pokok"];
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: row))
+          .value = e["total_gaji_lembur"];
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: row))
+          .value = e["total_pinjaman"];
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: row))
+          .value = e["total_gaji_keterlambatan"];
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: row))
+          .value = e["total_gaji_keseluruhan"].toString();
+    });
+
+    return "slip_gaji.xlsx";
+  }
+
+  void _createPdf() async {
+    final doc = pw.Document();
+
+    int no = 0;
+
+    doc.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pdfPresensi(no);
+        },
+      ),
+    );
+
+    /// print the document using the iOS or Android print service:
+    await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async => doc.save());
+  }
+
+  pw.Column pdfPresensi(no) {
+    return pw.Column(
+      children: [
+        pw.Center(
+          child: pw.Text("Data Presensi"),
+        ),
+        pw.SizedBox(height: 20),
+        pw.Table(
+          border: pw.TableBorder.all(
+            color: PdfColor.fromHex("#000000"),
+            width: 2,
+          ),
+          children: [
+            pw.TableRow(
+              children: [
+                pw.Container(
+                  width: 40,
+                  child: pw.Text("No",
+                      textAlign: pw.TextAlign.center,
+                      style: pw.TextStyle(
+                        fontSize: 12,
+                        fontWeight: pw.FontWeight.bold,
+                      )),
+                ),
+                pw.Container(
+                  width: 100,
+                  child: pw.Text("Nama",
+                      textAlign: pw.TextAlign.center,
+                      style: pw.TextStyle(
+                        fontSize: 12,
+                        fontWeight: pw.FontWeight.bold,
+                      )),
+                ),
+                pw.Text("Gaji Pokok",
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    )),
+                pw.Text("Total Gaji Lembur",
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    )),
+                pw.Text("Total Pinjaman",
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    )),
+                pw.Text("Total Keterlambatan",
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    )),
+                pw.Text("Total Keseluruhan",
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    )),
+              ],
+            ),
+            // add data to table
+            ...data.map(
+              (data1) {
+                no++;
+
+                return pw.TableRow(
+                  children: [
+                    pw.Text(no.toString(),
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                        )),
+                    pw.Text(data1["nama"],
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                        )),
+                    pw.Text(data1["total_gaji_pokok"].toString(),
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                        )),
+                    pw.Text(data1["total_gaji_lembur"].toString(),
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                        )),
+                    pw.Text(data1["total_pinjaman"].toString(),
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                        )),
+                    pw.Text(data1["total_gaji_keterlambatan"].toString(),
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                        )),
+                    pw.Text(data1["total_gaji_keseluruhan"].toString(),
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                        )),
+                  ],
+                );
+              },
+            )
+          ],
+        )
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -247,39 +366,50 @@ class _GajiState extends State<Gaji> {
               ],
             ),
           ),
-          Container(
-            margin: const EdgeInsets.only(
-                bottom: 10, right: 14, left: 1100, top: 10),
-            child: Row(
-              children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Warna.hijauht,
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                  ),
-                  onPressed: () {
-                    print(data.toString());
-                  },
-                  child: const Text("Cetak"),
-                ),
-                const SizedBox(
-                  width: 5,
-                ),
-                Row(
+          SizedBox(
+            height: 10,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Container(
+                margin: const EdgeInsets.only(right: 24),
+                child: Row(
                   children: [
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            const Color.fromARGB(255, 88, 104, 103),
+                        backgroundColor: Warna.hijauht,
                         padding: const EdgeInsets.symmetric(horizontal: 15),
                       ),
-                      onPressed: () {},
-                      child: const Text("Download"),
-                    )
+                      onPressed: () {
+                        _createPdf();
+                      },
+                      child: const Text("Cetak"),
+                    ),
+                    const SizedBox(
+                      width: 5,
+                    ),
+                    Row(
+                      children: [
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color.fromARGB(255, 88, 104, 103),
+                            padding: const EdgeInsets.symmetric(horizontal: 15),
+                          ),
+                          onPressed: () {
+                            _exportToExcel();
+                          },
+                          child: const Text("Download"),
+                        )
+                      ],
+                    ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
+          SizedBox(
+            height: 20,
           ),
           Container(
             margin: const EdgeInsets.only(left: 900, right: 20),

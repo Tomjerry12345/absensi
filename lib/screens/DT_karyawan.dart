@@ -1,17 +1,14 @@
-// ignore_for_file: file_names
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// import 'package:fluttertoast/fluttertoast.dart';
 import 'package:web_dashboard_app_tut/resources/warna.dart';
-// import 'package:syncfusion_flutter_pdf/pdf.dart';
-
-// ignore: depend_on_referenced_packages
 import 'package:pdf/pdf.dart';
-// ignore: depend_on_referenced_packages
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:pdf/pdf.dart';
+import 'package:excel/excel.dart';
+import 'dart:async';
+import 'package:intl/intl.dart';
 
 class Karyawan extends StatefulWidget {
   const Karyawan({Key? key}) : super(key: key);
@@ -91,6 +88,199 @@ class _KaryawanState extends State<Karyawan> {
     }
   }
 
+  void _exportToExcel(QuerySnapshot<Map<String, dynamic>?>? data) {
+    final excel = Excel.createExcel();
+    final sheet = excel.sheets[excel.getDefaultSheet() as String];
+    sheet!.setColWidth(2, 50);
+    sheet.setColAutoFit(0);
+
+    String fileName = excellKaryawan(sheet, data);
+
+    excel.save(fileName: fileName);
+  }
+
+  String excellKaryawan(sheet, data) {
+    int row = 0;
+
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0)).value =
+        'No';
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: 0)).value =
+        'Nama';
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: 0)).value =
+        'Alamat';
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: 0)).value =
+        'No Hp';
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: 0)).value =
+        'No Rekening';
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: 0)).value =
+        'Email';
+
+    data?.docs.forEach((e) {
+      row++;
+
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
+          .value = row.toString();
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
+          .value = e["nama"];
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: row))
+          .value = e['alamat'];
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: row))
+          .value = e["no_hp"];
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: row))
+          .value = e["no_rekening"];
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: row))
+          .value = e["email"];
+    });
+
+    return "data_karyawan.xlsx";
+  }
+
+  void _createPdf(data1) async {
+    final doc = pw.Document();
+
+    // retrieve data from Firebase collection pengajuan
+    // QuerySnapshot querySnapshot =
+    //     await FirebaseFirestore.instance.collection('pengajuan').get();
+
+    List<DocumentSnapshot> documentList = data1.docs;
+
+    int no = 0;
+
+    /// for using an image from assets
+    // final image = await imageFromAssetBundle('assets/image.png');
+
+    doc.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pdfKaryawan(no, documentList);
+        },
+      ),
+    );
+
+    /// print the document using the iOS or Android print service:
+    await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async => doc.save());
+
+    /// share the document to other applications:
+    // await Printing.sharePdf(bytes: await doc.save(), filename: 'my-document.pdf');
+
+    /// tutorial for using path_provider: https://www.youtube.com/watch?v=fJtFDrjEvE8
+    /// save PDF with Flutter library "path_provider":
+    // final output = await getTemporaryDirectory();
+    // final file = File('${output.path}/example.pdf');
+    // await file.writeAsBytes(await doc.save());
+  }
+
+  pw.Column pdfKaryawan(no, documentList) {
+    return pw.Column(
+      children: [
+        pw.Center(
+          child: pw.Text("Data Pengajuan"),
+        ),
+        pw.SizedBox(height: 20),
+        pw.Table(
+          border: pw.TableBorder.all(
+            color: PdfColor.fromHex("#000000"),
+            width: 2,
+          ),
+          children: [
+            pw.TableRow(
+              children: [
+                pw.Text("No",
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    )),
+                pw.Text("Nama",
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    )),
+                pw.Text("Alamat",
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    )),
+                pw.Text("No HP",
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    )),
+                pw.Text("No Rekening",
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    )),
+                pw.Text("Email",
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    )),
+              ],
+            ),
+            // add data to table
+            ...documentList.map(
+              (DocumentSnapshot document) {
+                no++;
+
+                Map<String, dynamic> data =
+                    document.data() as Map<String, dynamic>;
+
+                return pw.TableRow(
+                  children: [
+                    pw.Text(no.toString(),
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                        )),
+                    pw.Text(data["nama"],
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                        )),
+                    pw.Text(data["alamat"],
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                        )),
+                    pw.Text(data["no_hp"],
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                        )),
+                    pw.Text(data["no_rekening"],
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                        )),
+                    pw.Text(data["email"],
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                        )),
+                  ],
+                );
+              },
+            )
+          ],
+        )
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final scrollController = ScrollController();
@@ -132,7 +322,9 @@ class _KaryawanState extends State<Karyawan> {
                             backgroundColor: Warna.hijauht,
                             padding: const EdgeInsets.symmetric(horizontal: 15),
                           ),
-                          onPressed: _createPdf,
+                          onPressed: () {
+                            _createPdf(snapshot.data);
+                          },
                           child: const Text("Cetak"),
                         ),
                         const SizedBox(
@@ -149,7 +341,10 @@ class _KaryawanState extends State<Karyawan> {
                               ),
                               child: const Text("Download"),
                               // onPressed: _createPDF,
-                              onPressed: () {},
+                              onPressed: () {
+                                _exportToExcel(snapshot.data
+                                    as QuerySnapshot<Map<String, dynamic>?>?);
+                              },
                             )
                           ],
                         ),
