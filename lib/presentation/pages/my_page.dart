@@ -4,6 +4,7 @@ import 'package:flutter_application_1/presentation/pages/Izin.dart';
 
 import 'package:flutter_application_1/presentation/pages/check_lembur.dart';
 import 'package:flutter_application_1/presentation/pages/kasbon.dart';
+import 'package:flutter_application_1/presentation/pages/profil.dart';
 
 import 'data_presensi.dart';
 
@@ -20,9 +21,10 @@ class MyPagesState extends State<MyPages> {
   int _selectedIndex = 0;
   final List<Widget> _widgetOptions = <Widget>[
     DataPresensi(),
-    const check_lemburPage(),
+    // const check_lemburPage(),
     const Kasbon(),
-    const Izin()
+    const Izin(),
+    const Profil()
   ];
 
   void _onItemTapped(int index) {
@@ -65,16 +67,16 @@ class MyPagesState extends State<MyPages> {
             //backgroundColor: Colors.red,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.timer),
-            label: 'Lembur',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.monetization_on),
             label: 'Kasbon',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.bookmark_add),
             label: 'Izin',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people),
+            label: 'Profil',
           ),
         ],
         currentIndex: _selectedIndex,

@@ -196,107 +196,110 @@ class _CheckPageState extends State<CheckPage> {
             child: StreamBuilder<QuerySnapshot>(
                 stream: streamPresent(),
                 builder: (context, snap) {
-                  var _isCheckIn = snap.data!.size > 0 ? false : true;
-                  Map<String, dynamic>? data;
+                  if (snap.hasData) {
+                    var _isCheckIn = snap.data!.size > 0 ? false : true;
+                    Map<String, dynamic>? data;
 
-                  if (!_isCheckIn) {
-                    data = snap.data!.docs[0].data() as Map<String, dynamic>?;
+                    if (!_isCheckIn) {
+                      data = snap.data!.docs[0].data() as Map<String, dynamic>?;
+                    }
+// print(data);
+                    return Stack(
+                      children: [
+                        Container(
+                            child: Image.asset(
+                          Gambar.lmbur,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: MediaQuery.of(context).size.height * 0.4,
+                        )),
+                        Container(
+                          margin: const EdgeInsets.symmetric(vertical: 20),
+                          width: double.infinity,
+                          padding: const EdgeInsets.only(),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Container(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    IconButton(
+                                        icon: const Icon(Icons.arrow_back),
+                                        color: Warna.putih,
+                                        onPressed: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      const MyPages()));
+                                        }),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 20,
+                              ),
+                              Title(
+                                color: Warna.putih,
+                                child: Text(
+                                  (DateFormat('KK:mm').format(DateTime.now())),
+                                  style: TextStyle(
+                                    color: Warna.putih,
+                                    fontSize: 32,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              Title(
+                                color: Warna.hijau2,
+                                child: Text(
+                                  (DateFormat('dd MMMM yyyy')
+                                      .format(DateTime.now())),
+                                  style: TextStyle(
+                                    color: Warna.putih,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 2,
+                        ),
+                        Container(
+                            margin: const EdgeInsets.only(top: 180, bottom: 10),
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(25),
+                            child: data?["waktu_pulang"].toString() == "{}" ||
+                                    data == null
+                                ? ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: _isCheckIn
+                                          ? Warna.kuning
+                                          : Warna.hijau2,
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 20),
+                                    ),
+                                    child: Text(
+                                        _isCheckIn ? "Check In" : "Check Out"),
+                                    onPressed: () {
+                                      setState(() {
+                                        _isCheckIn = false;
+                                      });
+                                      scanQR();
+                                    },
+                                  )
+                                : null)
+                      ],
+                    );
                   }
 
-                  // print(data);
-                  return Stack(
-                    children: [
-                      Container(
-                          child: Image.asset(
-                        Gambar.lmbur,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: MediaQuery.of(context).size.height * 0.4,
-                      )),
-                      Container(
-                        margin: const EdgeInsets.symmetric(vertical: 20),
-                        width: double.infinity,
-                        padding: const EdgeInsets.only(),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Container(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  IconButton(
-                                      icon: const Icon(Icons.arrow_back),
-                                      color: Warna.putih,
-                                      onPressed: () {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    const MyPages()));
-                                      }),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 20,
-                            ),
-                            Title(
-                              color: Warna.putih,
-                              child: Text(
-                                (DateFormat('KK:mm').format(DateTime.now())),
-                                style: TextStyle(
-                                  color: Warna.putih,
-                                  fontSize: 32,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            Title(
-                              color: Warna.hijau2,
-                              child: Text(
-                                (DateFormat('dd MMMM yyyy')
-                                    .format(DateTime.now())),
-                                style: TextStyle(
-                                  color: Warna.putih,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 2,
-                      ),
-                      Container(
-                          margin: const EdgeInsets.only(top: 180, bottom: 10),
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(25),
-                          child: data?["waktu_pulang"].toString() == "{}" ||
-                                  data == null
-                              ? ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: _isCheckIn
-                                        ? Warna.kuning
-                                        : Warna.hijau2,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 20),
-                                  ),
-                                  child: Text(
-                                      _isCheckIn ? "Check In" : "Check Out"),
-                                  onPressed: () {
-                                    setState(() {
-                                      _isCheckIn = false;
-                                    });
-                                    scanQR();
-                                  },
-                                )
-                              : null)
-                    ],
-                  );
+                  return Text("No Data");
                 }),
           ),
           const SizedBox(
@@ -305,37 +308,41 @@ class _CheckPageState extends State<CheckPage> {
           StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             stream: streamAllPresent(),
             builder: ((context, snapPresent) {
-              if (snapPresent.data?.docs.length == 0 ||
-                  snapPresent.data == null) {
-                return const SizedBox(
-                  height: 400,
-                  child: Center(
-                    child: Text("Maaf, History absen anda belum ada!!!"),
-                  ),
+              if (snapPresent.hasData) {
+                if (snapPresent.data?.docs.length == 0 ||
+                    snapPresent.data == null) {
+                  return const SizedBox(
+                    height: 400,
+                    child: Center(
+                      child: Text("Maaf, History absen anda belum ada!!!"),
+                    ),
+                  );
+                }
+                return ListView.builder(
+                  shrinkWrap: true,
+                  scrollDirection: Axis.vertical,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: snapPresent.data!.docs.length,
+                  itemBuilder: (context, index) {
+                    Map<String, dynamic> data =
+                        snapPresent.data!.docs[index].data();
+
+                    var date =
+                        "${data["tanggal"]["hari"]}/${data["tanggal"]["bulan"]}/${data["tanggal"]["tahun"]}";
+
+                    return AttendanceCard(
+                      date: date,
+                      checkIn:
+                          "${data["waktu_datang"]["jam"]}:${data["waktu_datang"]["menit"]}",
+                      checkout: data["waktu_pulang"]["jam"] == null
+                          ? "-"
+                          : "${data["waktu_pulang"]["jam"]}:${data["waktu_pulang"]["menit"]}",
+                    );
+                  },
                 );
               }
-              return ListView.builder(
-                shrinkWrap: true,
-                scrollDirection: Axis.vertical,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: snapPresent.data!.docs.length,
-                itemBuilder: (context, index) {
-                  Map<String, dynamic> data =
-                      snapPresent.data!.docs[index].data();
 
-                  var date =
-                      "${data["tanggal"]["hari"]}/${data["tanggal"]["bulan"]}/${data["tanggal"]["tahun"]}";
-
-                  return AttendanceCard(
-                    date: date,
-                    checkIn:
-                        "${data["waktu_datang"]["jam"]}:${data["waktu_datang"]["menit"]}",
-                    checkout: data["waktu_pulang"]["jam"] == null
-                        ? "-"
-                        : "${data["waktu_pulang"]["jam"]}:${data["waktu_pulang"]["menit"]}",
-                  );
-                },
-              );
+              return Text("");
             }),
           )
         ],
