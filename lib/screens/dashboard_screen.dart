@@ -57,26 +57,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             children: [
                               Padding(
                                   padding: EdgeInsets.only(
-                                left: 15,
-                                top: 8,
+                                left: 90,
+                                top: 15,
                               )),
                               Text(
-                                "Harma",
+                                "ADMIN",
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600,
                                   color: Warna.htam,
-                                ),
-                              ),
-                              SizedBox(
-                                height: 3,
-                              ),
-                              Text(
-                                "Karyawan",
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: Warna.kuning,
                                 ),
                               ),
                             ],
