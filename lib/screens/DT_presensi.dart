@@ -388,50 +388,9 @@ class _PresensiState extends State<Presensi> {
                       ),
                     ),
                     Container(
-                      margin: const EdgeInsets.only(
-                          bottom: 10, top: 10, right: 20, left: 10),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Warna.hijauht,
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 15),
-                            ),
-                            onPressed: () {
-                              _createPdf(snapshot.data);
-                            },
-                            child: const Text("Cetak"),
-                          ),
-                          const SizedBox(
-                            width: 5,
-                          ),
-                          Row(
-                            children: [
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      Color.fromARGB(255, 88, 104, 103),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 15),
-                                ),
-                                child: const Text("Download"),
-                                // onPressed: _createPDF,
-                                onPressed: () {
-                                  _exportToExcel(snapshot.data);
-                                },
-                              )
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
                       // margin: EdgeInsets.only(top: 10),
                       // margin: EdgeInsets.symmetric(horizontal: 30),
-                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      margin: const EdgeInsets.only(bottom: 10, right: 20),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
@@ -439,6 +398,7 @@ class _PresensiState extends State<Presensi> {
                             DateFormat('yMMMM').format(selectedPeriod),
                             style: TextStyle(
                                 color: Warna.hijau2,
+                                fontSize: 17,
                                 fontWeight: FontWeight.bold),
                           ),
                           IconButton(
@@ -450,6 +410,55 @@ class _PresensiState extends State<Presensi> {
                               }),
                         ],
                       ),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(
+                              bottom: 10, top: 10, right: 20, left: 10),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Warna.hijauht,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 15),
+                                ),
+                                onPressed: () {
+                                  _createPdf(snapshot.data);
+                                },
+                                child: const Text("Cetak"),
+                              ),
+                              const SizedBox(
+                                width: 5,
+                              ),
+                              Row(
+                                children: [
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor:
+                                          Color.fromARGB(255, 88, 104, 103),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 15),
+                                    ),
+                                    child: const Text("Download"),
+                                    // onPressed: _createPDF,
+                                    onPressed: () {
+                                      _exportToExcel(snapshot.data);
+                                    },
+                                  )
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                     Container(
                       margin: const EdgeInsets.only(left: 900, right: 20),
@@ -493,7 +502,7 @@ class _PresensiState extends State<Presensi> {
                     SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: DataTable(
-                          columnSpacing: 70,
+                          columnSpacing: 90,
                           horizontalMargin: 70,
                           showCheckboxColumn: false,
                           dataRowHeight: 48,

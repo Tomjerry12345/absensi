@@ -171,7 +171,7 @@ class _PengajuanState extends State<Pengajuan> {
 
   DataTable TabelIzin(snapshot, submit, context) {
     return DataTable(
-      columnSpacing: 70,
+      columnSpacing: 78,
       horizontalMargin: 30,
       showCheckboxColumn: false,
       dataRowHeight: 48,
@@ -281,8 +281,8 @@ class _PengajuanState extends State<Pengajuan> {
 
   DataTable TabelKasbon(snapshot, submit, context) {
     return DataTable(
-      columnSpacing: 70,
-      horizontalMargin: 30,
+      columnSpacing: 100,
+      horizontalMargin: 70,
       showCheckboxColumn: false,
       dataRowHeight: 48,
       headingRowColor: MaterialStateProperty.all(Colors.grey.shade200),
@@ -290,7 +290,7 @@ class _PengajuanState extends State<Pengajuan> {
         DataColumn(label: Text("No")),
         DataColumn(label: Text("Nama")),
         DataColumn(label: Text("Tanggal Pengajuan")),
-        DataColumn(label: Text("Jenis")),
+        //DataColumn(label: Text("Jenis")),
         DataColumn(label: Text("Keterangan")),
         DataColumn(label: Text("Biaya")),
         DataColumn(label: Text("Status")),
@@ -305,7 +305,7 @@ class _PengajuanState extends State<Pengajuan> {
           DataCell(Text(DateFormat('dd MMMM yyyy')
               .format(data['created_at'].toDate())
               .toString())),
-          DataCell(Text(data["jenis"])),
+          //DataCell(Text(data["jenis"])),
           DataCell(Text(data['keterangan'])),
           DataCell(Text("Rp ${data['biaya']}")),
           DataCell(Column(
@@ -750,13 +750,13 @@ class _PengajuanState extends State<Pengajuan> {
                     ],
                   ),
                   SizedBox(
-                    height: 20,
+                    height: 15,
                   ),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                    // mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Container(
-                        // margin: const EdgeInsets.only(left: 17, right: 1100),
+                        margin: const EdgeInsets.only(left: 19, right: 30),
                         width: 200,
                         child: Column(
                           children: <Widget>[
@@ -785,8 +785,8 @@ class _PengajuanState extends State<Pengajuan> {
                         width: 10,
                       ),
                       Container(
-                        margin: const EdgeInsets.only(right: 20),
-                        width: 200,
+                        margin: const EdgeInsets.only(left: 650, right: 20),
+                        width: 339,
                         height: 48,
                         decoration: BoxDecoration(
                             color: Warna.putih,

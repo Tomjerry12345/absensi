@@ -450,7 +450,7 @@ class _GajiState extends State<Gaji> {
           SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: DataTable(
-                columnSpacing: 70,
+                columnSpacing: 83,
                 horizontalMargin: 70,
                 showCheckboxColumn: false,
                 dataRowHeight: 48,
