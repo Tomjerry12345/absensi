@@ -21,6 +21,7 @@ import 'package:printing/printing.dart';
 import 'package:web_dashboard_app_tut/utils/Utilitas.dart';
 import '../models/present.dart';
 import 'package:flutter/foundation.dart';
+import 'package:month_picker_dialog/month_picker_dialog.dart';
 // import 'package:syncfusion_flutter_xlsio/xlsio.dart';
 
 class Gaji extends StatefulWidget {
@@ -48,40 +49,40 @@ class _GajiState extends State<Gaji> {
     getUsers();
   }
 
-  Future<DateTime> _selectPeriod(BuildContext context) async {
-    final selected = await showDatePicker(
-        context: context,
-        initialDate: selectedPeriod,
-        firstDate: DateTime(2000),
-        lastDate: DateTime(2025));
-    if (selected != null && selected != selectedPeriod) {
-      setState(() {
-        selectedPeriod = selected;
-      });
-    }
-    return selectedPeriod;
+  void _selectPeriod(BuildContext context) async {
+    showMonthPicker(
+      context: context,
+      initialDate: DateTime.now(),
+    ).then((date) {
+      if (date != null) {
+        setState(() {
+          selectedPeriod = date;
+        });
+        getUsers();
+      }
+    });
   }
 
-  void getUsers() async {
+  void getUsers({q = ""}) async {
+    index = 0;
     List<Map<String, dynamic>> l = [];
-    String todayDocID =
-        DateFormat().add_yMd().format(selectedPeriod).replaceAll("/", "-");
-    var date = todayDocID.split("-");
+    // String todayDocID =
+    //     DateFormat().add_yMd().format(selectedPeriod).replaceAll("/", "-");
+    // var date = todayDocID.split("-");
 
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    QuerySnapshot<Map<String, dynamic>> users =
-        await firestore.collection("users").get();
+    QuerySnapshot<Map<String, dynamic>> users = q == ""
+        ? await firestore.collection("users").get()
+        : await firestore.collection("users").where("nama", isEqualTo: q).get();
     QuerySnapshot<Map<String, dynamic>> present = await firestore
         .collection("present")
-        .where("tanggal.bulan", isEqualTo: date[0])
+        .where("tanggal.bulan", isEqualTo: "${selectedPeriod.month}")
         .get();
     QuerySnapshot<Map<String, dynamic>> pengajuan = await firestore
         .collection("pengajuan")
-        .where("tanggal_mulai", isEqualTo: monthName(int.parse(date[0])))
+        .where("tanggal_mulai", isEqualTo: monthName(selectedPeriod.month))
         .where("tipe_pengajuan", isEqualTo: "Kasbon")
         .get();
-
-    logO("pengajuan", pengajuan.size);
 
     users.docs.forEach((u) {
       final uData = u.data();
@@ -362,7 +363,9 @@ class _GajiState extends State<Gaji> {
                 IconButton(
                     icon: const Icon(Icons.keyboard_arrow_down),
                     color: Warna.hijau2,
-                    onPressed: () {}),
+                    onPressed: () {
+                      _selectPeriod(context);
+                    }),
               ],
             ),
           ),
@@ -421,9 +424,7 @@ class _GajiState extends State<Gaji> {
                 child: TextField(
               controller: searchController,
               onChanged: (value) {
-                setState(() {
-                  setState(() {});
-                });
+                getUsers(q: value);
               },
               decoration: InputDecoration(
                   focusedBorder: OutlineInputBorder(

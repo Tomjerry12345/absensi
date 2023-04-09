@@ -9,6 +9,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:web_dashboard_app_tut/utils/Utilitas.dart';
+import 'package:month_picker_dialog/month_picker_dialog.dart';
 
 class Pengajuan extends StatefulWidget {
   const Pengajuan({Key? key}) : super(key: key);
@@ -25,6 +26,7 @@ class _PengajuanState extends State<Pengajuan> {
   ];
 
   DateTime selectedPeriod = DateTime.now();
+  DateTime? _selected;
   bool show = false;
 
   FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -44,18 +46,17 @@ class _PengajuanState extends State<Pengajuan> {
   String jumlah = "";
   bool loading = false;
 
-  Future<DateTime> _selectPeriod(BuildContext context) async {
-    final selected = await showDatePicker(
-        context: context,
-        initialDate: selectedPeriod,
-        firstDate: DateTime(2000),
-        lastDate: DateTime(2025));
-    if (selected != null && selected != selectedPeriod) {
-      setState(() {
-        selectedPeriod = selected;
-      });
-    }
-    return selectedPeriod;
+  void _selectPeriod(BuildContext context) async {
+    showMonthPicker(
+      context: context,
+      initialDate: DateTime.now(),
+    ).then((date) {
+      if (date != null) {
+        setState(() {
+          selectedPeriod = date;
+        });
+      }
+    });
   }
 
   Future submit(String? status, String? id, BuildContext context) async {
@@ -696,7 +697,7 @@ class _PengajuanState extends State<Pengajuan> {
                             color: Warna.hijau2,
                             onPressed: () {
                               _selectPeriod(context);
-                              show = true;
+                              // show = true;
                             }),
                       ],
                     ),
@@ -753,10 +754,10 @@ class _PengajuanState extends State<Pengajuan> {
                     height: 15,
                   ),
                   Row(
-                    // mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        margin: const EdgeInsets.only(left: 19, right: 30),
+                        margin: const EdgeInsets.only(left: 30),
                         width: 200,
                         child: Column(
                           children: <Widget>[
@@ -785,8 +786,8 @@ class _PengajuanState extends State<Pengajuan> {
                         width: 10,
                       ),
                       Container(
-                        margin: const EdgeInsets.only(left: 650, right: 20),
-                        width: 339,
+                        margin: const EdgeInsets.only(right: 20),
+                        width: 200,
                         height: 48,
                         decoration: BoxDecoration(
                             color: Warna.putih,
